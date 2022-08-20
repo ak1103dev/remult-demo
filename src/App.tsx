@@ -1,3 +1,4 @@
+import { ErrorInfo } from "remult";
 import { useEffect, useState } from "react";
 import { remult } from "./common";
 import { Task } from "./shared/Task";
@@ -13,8 +14,9 @@ async function fetchTasks(hideCompleted: boolean) {
 }
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<(Task & { error?: ErrorInfo<Task> })[]>([]);
   const [hideCompleted, setHideCompleted] = useState(false);
+
 
   useEffect(() => {
     fetchTasks(hideCompleted).then(setTasks);
@@ -37,9 +39,14 @@ function App() {
         };
 
         const saveTask = async () => {
-          const savedTask = await taskRepo.save(task);
-          setTasks(tasks.map(t => t === task ? savedTask : t));
-        };
+          try {
+            const savedTask = await taskRepo.save(task);
+            setTasks(tasks.map(t => t === task ? savedTask : t));
+          } catch (error: any) {
+            alert(error.message);
+            setTasks(tasks.map(t => t === task ? { ...task, error } : t));
+          }
+        }
 
         const deleteTask = async () => {
           await taskRepo.delete(task);
@@ -54,6 +61,7 @@ function App() {
             <input
               value={task.title}
               onChange={e => handleChange({ title: e.target.value })} />
+            {task.error?.modelState?.title}
             <button onClick={saveTask}>Save</button>
             <button onClick={deleteTask}>Delete</button>
           </div>

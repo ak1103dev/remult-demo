@@ -1,4 +1,4 @@
-import { Entity, Fields } from "remult";
+import { Entity, Fields, Validators } from "remult";
 
 @Entity("tasks", {
     allowApiCrud: true
@@ -7,7 +7,9 @@ export class Task {
     @Fields.uuid()
     id!: string;
 
-    @Fields.string()
+    @Fields.string({
+        validate: Validators.required
+    })
     title = '';
 
     @Fields.boolean()
