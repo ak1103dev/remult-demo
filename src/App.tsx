@@ -20,6 +20,10 @@ function App() {
     fetchTasks(hideCompleted).then(setTasks);
  }, [hideCompleted]);
 
+  const addTask = () => {
+    setTasks([...tasks, new Task()])
+  };
+
   return (
     <div>
        <input
@@ -32,9 +36,15 @@ function App() {
           setTasks(tasks.map(t => t === task ? { ...task, ...values } : t));
         };
 
-        const saveTask = () => {
-          taskRepo.save(task);
-       };
+        const saveTask = async () => {
+          const savedTask = await taskRepo.save(task);
+          setTasks(tasks.map(t => t === task ? savedTask : t));
+        };
+
+        const deleteTask = async () => {
+          await taskRepo.delete(task);
+          setTasks(tasks.filter(t => t !== task));
+        };
 
         return (
           <div key={task.id}>
@@ -45,9 +55,11 @@ function App() {
               value={task.title}
               onChange={e => handleChange({ title: e.target.value })} />
             <button onClick={saveTask}>Save</button>
+            <button onClick={deleteTask}>Delete</button>
           </div>
         );
       })}
+      <button onClick={addTask}>Add Task</button>
     </div>
   );
 }
